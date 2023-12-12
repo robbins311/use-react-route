@@ -1,8 +1,16 @@
-import { Form, useNavigate, useNavigation } from "react-router-dom";
+import {
+  Form,
+  json,
+  redirect,
+  useActionData,
+  useNavigate,
+  useNavigation,
+} from "react-router-dom";
 
 import classes from "./EventForm.module.css";
 
 function EventForm({ method, event }) {
+  const data = useActionData();
   const navigate = useNavigate();
   const navigation = useNavigation();
 
@@ -15,7 +23,12 @@ function EventForm({ method, event }) {
 
   return (
     // react router 에서 제공하는 Form을 쓰면 action을 트리거할수있음
-    <Form method="post" className={classes.form}>
+    <Form method={method} className={classes.form}>
+      {data && data.error && (
+        <ul>
+          {Object.values(data.errors.map((err) => <li key={err}>{err}</li>))}
+        </ul>
+      )}
       <p>
         <label htmlFor="title">Title</label>
         <input
@@ -69,3 +82,42 @@ function EventForm({ method, event }) {
 }
 
 export default EventForm;
+
+export async function action({ request, params }) {
+  //Form에서 객체분할해서 요청하는 MEthod
+  const method = request.method;
+  const data = await request.formData();
+
+  const eventeData = {
+    title: data.get("title"),
+    image: data.get("image"),
+    date: data.get("date"),
+    description: data.get("description"),
+  };
+
+  let url = "http://localhost:8080/events";
+
+  if (method === "PATCH") {
+    const id = params.eventsID;
+    url = "http://localhost:8080/events/" + id;
+  }
+
+  const response = await fetch(url, {
+    method: method,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(eventeData),
+  });
+
+  // 422 오류 일때 reponse 리턴하면 useActiondata를 form에서 써야함
+  if (response.status === 422) {
+    return response;
+  }
+
+  if (!response.ok) {
+    throw json({ message: "could not save data" }, { status: 500 });
+  }
+
+  return redirect("/events");
+}

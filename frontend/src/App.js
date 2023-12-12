@@ -6,10 +6,12 @@ import EventsDetailPage, {
   loader as EventsDetailLoader,
   action as deleteEventAction,
 } from "./pages/EventsDetail";
-import NewEventsPage, { action as newEventAction } from "./pages/NewEvent";
+import NewEventsPage from "./pages/NewEvent";
 import EditEventsPage from "./pages/EditEvent";
 import EventsRootLayout from "./pages/EventsRoot";
 import ErrorPage from "./pages/Error";
+import { action as manipulateEventAction } from "./components/EventForm";
+import NewsletterPage, { action as newsletterAction } from "./pages/Newsletter";
 // Challenge / Exercise
 
 // 1. Add five new (dummy) page components (content can be simple <h1> elements)
@@ -69,6 +71,8 @@ function App() {
                 {
                   path: "edit",
                   element: <EditEventsPage />,
+                  // form 이 제출된 방법에 따라 하나의 액션을 여러개의 컴포넌트에서 씀
+                  action: manipulateEventAction,
                 },
               ],
             },
@@ -76,9 +80,15 @@ function App() {
             {
               path: "new",
               element: <NewEventsPage />,
-              action: newEventAction,
+              // form 이 제출된 방법에 따라 하나의 액션을 여러개의 컴포넌트에서 씀
+              action: manipulateEventAction,
             },
           ],
+        },
+        {
+          path: "newsletter",
+          element: <NewsletterPage />,
+          action: newsletterAction,
         },
       ],
     },
